@@ -1,0 +1,2 @@
+# The extract is fixture data. Collapse it in diffs and keep it out of language stats.
+meridian-extract/*.csv linguist-generated=true -diff

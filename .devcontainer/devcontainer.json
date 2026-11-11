@@ -1,0 +1,13 @@
+{
+  "name": "freshflow",
+  "build": { "dockerfile": "../Dockerfile", "context": ".." },
+  "initializeCommand": "touch .env",
+  "runArgs": ["--env-file", ".env"],
+  "workspaceFolder": "/work",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/work,type=bind",
+  "postCreateCommand": "uv sync --frozen",
+  "forwardPorts": [8077],
+  "customizations": {
+    "vscode": { "extensions": ["ms-python.python"] }
+  }
+}

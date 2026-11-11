@@ -1,0 +1,129 @@
+# Meridian Markets business definitions.
+# This file is the single source of truth for what a word means.
+# The planner may only reference names defined here.
+
+dataset:
+  name: Meridian Markets 90-day pilot extract
+  window_start: "2026-04-01"
+  window_end: "2026-06-30"
+  stores: 10
+  note: >-
+    Store-item-days with no movement are absent, not zero. Shipments are cases;
+    units received = cases_received * case_size.
+
+policies:
+  fresh_departments: [Produce, Dairy, Meat, Bakery, Deli]
+  center_store_departments: [Grocery]
+  default_scope: fresh
+  default_shrink_basis: cost
+  scope_rationale: >-
+    When the ops team says "shrink" they mean the five fresh departments. Grocery
+    is center store, where shipped-minus-sold is mostly inventory build, not waste.
+  basis_rationale: >-
+    Merchandising decisions are dollar decisions, so cost is the default basis.
+    Unit shrink and cost shrink do not move together, so both are always computed.
+
+measures:
+  units_sold:
+    label: Units sold
+    formula: sum of units_sold, in the item's unit of measure
+    sql: "COALESCE(SUM(f.units_sold), 0)"
+    unit: units
+    needs: [sales]
+  net_sales:
+    label: Net sales
+    formula: sum of retail dollars
+    sql: "COALESCE(SUM(f.net_sales), 0)"
+    unit: dollars
+    needs: [sales]
+  units_shipped:
+    label: Units shipped
+    formula: cases_received * case_size
+    sql: "COALESCE(SUM(f.cases_received * i.case_size), 0)"
+    unit: units
+    needs: [shipments]
+  cost_shipped:
+    label: Cost of units shipped
+    formula: cases_received * case_size * unit_cost
+    sql: "COALESCE(SUM(f.cases_received * i.case_size * i.unit_cost), 0)"
+    unit: dollars
+    needs: [shipments]
+  shrink_units:
+    label: Shrink (units)
+    formula: units shipped minus units sold
+    sql: "COALESCE(SUM(f.cases_received * i.case_size), 0) - COALESCE(SUM(f.units_sold), 0)"
+    unit: units
+    needs: [shipments, sales]
+    basis: units
+    pair: shrink_cost
+  shrink_cost:
+    label: Shrink (cost dollars)
+    formula: (units shipped minus units sold) times unit cost
+    sql: "COALESCE(SUM(f.cases_received * i.case_size * i.unit_cost), 0) - COALESCE(SUM(f.units_sold * i.unit_cost), 0)"
+    unit: dollars
+    needs: [shipments, sales]
+    basis: cost
+    pair: shrink_units
+  shrink_rate_units:
+    label: Shrink rate (units)
+    formula: shrink units divided by units shipped
+    sql: "CASE WHEN COALESCE(SUM(f.cases_received * i.case_size),0) = 0 THEN NULL ELSE (COALESCE(SUM(f.cases_received * i.case_size),0) - COALESCE(SUM(f.units_sold),0)) / NULLIF(SUM(f.cases_received * i.case_size),0) END"
+    unit: percent
+    needs: [shipments, sales]
+    basis: units
+    pair: shrink_rate_cost
+  shrink_rate_cost:
+    label: Shrink rate (cost)
+    formula: shrink cost divided by cost of units shipped
+    sql: "CASE WHEN COALESCE(SUM(f.cases_received * i.case_size * i.unit_cost),0) = 0 THEN NULL ELSE (COALESCE(SUM(f.cases_received * i.case_size * i.unit_cost),0) - COALESCE(SUM(f.units_sold * i.unit_cost),0)) / NULLIF(SUM(f.cases_received * i.case_size * i.unit_cost),0) END"
+    unit: percent
+    needs: [shipments, sales]
+    basis: cost
+    pair: shrink_rate_units
+
+dimensions:
+  item:
+    label: Item
+    sql: "i.description"
+    key_sql: "i.item_id"
+  dept:
+    label: Department
+    sql: "i.dept"
+    values: [Produce, Dairy, Meat, Bakery, Deli, Grocery]
+  category:
+    label: Category
+    sql: "i.category"
+  store:
+    label: Store
+    sql: "CAST(f.store_id AS VARCHAR)"
+  banner:
+    label: Banner
+    sql: "f.banner"
+    values: [Meridian Foods, GreenLeaf]
+  region:
+    label: Region
+    sql: "f.region"
+    values: [Northeast, Midwest, West]
+  unit_of_measure:
+    label: Unit of measure
+    sql: "i.unit_of_measure"
+    values: [LB, EA]
+  month:
+    label: Month
+    sql: "strftime(f.date, '%Y-%m')"
+  week:
+    label: Week
+    sql: "strftime(date_trunc('week', f.date), '%Y-%m-%d')"
+  date:
+    label: Date
+    sql: "CAST(f.date AS VARCHAR)"
+
+synonyms:
+  fresh: the five fresh departments (Produce, Dairy, Meat, Bakery, Deli)
+  center store: Grocery
+  waste: shrink
+  shrink dollars: shrink_cost
+  shrink rate: shrink_rate_cost
+  best selling: rank by units_sold, or net_sales if the question says dollars
+  top items: rank by the measure the question is about, descending
+  performance: net_sales and units_sold together
