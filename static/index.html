@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FreshFlow Analytics — Meridian Markets</title>
+<style>
+:root{
+  --bg:#f4f6f3; --card:#fff; --ink:#16211c; --muted:#5c6b63; --line:#dfe4e0;
+  --accent:#1f7a4d; --warn:#b4530a; --warnbg:#fdf3e7; --flag:#8a1c1c; --code:#f2f4f2;
+  --upbg:#fdf0f0; --downbg:#eaf3ee;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+     font:15px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--ink);color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+header h1{margin:0;font-size:17px;letter-spacing:.2px}
+header p{margin:4px 0 0;font-size:13px;color:#9fb3a8}
+main{max-width:980px;margin:0 auto;padding:22px 18px 72px}
+form{display:flex;gap:8px;margin-bottom:12px}
+input[type=text]{flex:1;padding:12px 14px;border:1px solid var(--line);border-radius:8px;
+     font-size:15px;background:#fff;color:var(--ink)}
+button{padding:12px 18px;border:0;border-radius:8px;background:var(--accent);color:#fff;
+     font-size:15px;cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{
+  outline:2px solid var(--accent);outline-offset:2px}
+button.view,button.ghost{background:#fff;color:var(--muted);border:1px solid var(--line)}
+button.view.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+button.linkish{background:transparent;color:var(--muted);border:0;padding:4px 0;font-size:13px}
+button.linkish.on{color:var(--ink);font-weight:650}
+.views{display:flex;gap:8px;margin-bottom:16px}
+.seg{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 0 14px;
+  background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.seg span{color:var(--muted);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;margin-right:2px}
+.seg button{background:#fff;color:var(--muted);border:1px solid var(--line);padding:7px 13px;font-size:13.5px}
+.seg button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+select{padding:12px 14px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:#fff;color:var(--ink)}
+#rf{flex-wrap:wrap}
+#rf select{flex:1;min-width:240px}
+[hidden]{display:none !important}
+tr.total td{font-weight:650;border-top:2px solid var(--line)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px}
+.chip{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;
+     padding:5px 11px;font-size:12.5px;cursor:pointer}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;
+     margin-bottom:14px}
+.lead{font-size:22px;line-height:1.4;font-weight:500;margin:0}
+.lead .fig{font-weight:680;font-variant-numeric:tabular-nums}
+.follow{margin:0 0 8px}
+.callout{margin:16px 0 0;padding:10px 12px;border-left:3px solid var(--warn);background:var(--warnbg);border-radius:8px;font-size:14.5px}
+.callout.bad{border-left-color:var(--flag);background:#fdf0f0}
+.sources{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
+.sources ol{list-style:none;padding:0;margin:0}
+.sources ol li{display:grid;grid-template-columns:6.4em 1fr;gap:10px;margin:8px 0;color:var(--muted);font-size:13px;line-height:1.45}
+.sources .n{color:var(--accent);font-size:11px;font-weight:680;letter-spacing:.06em;text-transform:uppercase;padding-top:2px}
+.sources details{margin-top:12px}
+.sources details p{margin:0 0 8px}
+.answer-table{margin-top:18px}
+.kicker{margin:0 0 12px;color:var(--muted);font-size:13px}
+.say{font-size:18px;line-height:1.45;margin:0 0 8px}
+.answer .say:last-child{margin-bottom:0}
+.card .kpis{margin:0 0 14px}
+.card .kpi{background:#f6f8f6}
+details h3{margin-top:16px}
+details p{margin:8px 0 0}
+.answer p:last-child,.follow:last-child{margin-bottom:0}
+h3{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+ul{margin:0;padding-left:18px} li{margin:3px 0}
+.sens{border-left:4px solid var(--warn);background:var(--warnbg)}
+.sens strong{color:var(--warn)}
+.flag{border-left:4px solid var(--flag);background:#fdf0f0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.grid,.kpis{grid-template-columns:1fr}}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td.up{color:var(--flag);background:var(--upbg)}
+td.down{color:var(--accent);background:var(--downbg)}
+.up{color:var(--flag)} .down{color:var(--accent)}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:12px;
+    overflow-x:auto;font-size:12.5px;margin:0}
+details summary{cursor:pointer;color:var(--muted);font-size:13px}
+.meta{color:var(--muted);font-size:12.5px;margin:6px 0 0}
+.banner{margin:0 0 12px;font-size:14px}
+.pill{display:inline-block;background:#eaf3ee;color:var(--accent);border-radius:5px;
+      padding:1px 7px;font-size:11.5px;margin-right:5px}
+.scroll{max-height:340px;overflow:auto}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi span{display:block;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.kpi strong{display:block;font-size:22px;font-variant-numeric:tabular-nums;margin-top:4px}
+.kpi em{display:block;margin-top:2px;font-style:normal;color:var(--muted);font-size:12.5px}
+.status{color:var(--ink);font-weight:650;margin:0 0 12px}
+.steps{list-style:none;padding:0;margin:0 0 18px;display:flex;flex-wrap:wrap;gap:8px 16px}
+.steps li{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+.steps li.now{color:var(--ink);font-weight:650}
+.steps li.done{color:var(--accent)}
+.mark{width:9px;height:9px;border-radius:50%;border:2px solid #c5d0ca;flex:none;background:#fff}
+.done .mark{background:var(--accent);border-color:var(--accent)}
+.now .mark{border-color:var(--accent);background:#fff;box-shadow:0 0 0 4px #e5f2eb}
+.skeleton{display:grid;gap:10px}
+.skel{display:block;height:12px;border-radius:7px;
+  background:linear-gradient(90deg,#e4ebe6 0%,#f8faf8 42%,#e4ebe6 84%);
+  background-size:220% 100%;animation:shimmer 1.8s ease-in-out infinite}
+.skel.lead{height:22px;width:88%}
+.skel.short{width:52%}
+@keyframes shimmer{from{background-position:100% 0}to{background-position:-100% 0}}
+@media (prefers-reduced-motion: reduce){
+  .skel{animation:none;background:#e4ebe6}
+  .now .mark{box-shadow:none}
+}
+#debug{border:1px dashed #b7c4bc}
+#debug li{margin:8px 0}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>FreshFlow Analytics</h1>
+    <p>Meridian Markets pilot &mdash; 10 stores, 201 items, <span id="win"></span></p>
+  </div>
+</header>
+<main>
+  <nav class="views" aria-label="Sections">
+    <button type="button" id="view-ask" class="view">Ask</button>
+    <button type="button" id="view-report" class="view on">Weekly report</button>
+  </nav>
+  <div id="ask-view" hidden>
+    <div class="seg" role="group" aria-label="Shrink basis">
+      <span>Shrink in</span>
+      <button type="button" id="basis-auto" class="on">Auto</button>
+      <button type="button" id="basis-dollars">Dollars</button>
+      <button type="button" id="basis-units">Units</button>
+      <button type="button" id="basis-both">Both</button>
+    </div>
+    <form id="f">
+      <input id="q" type="text" autocomplete="off" aria-label="Question" placeholder="Ask about sales or shrink&hellip;"/>
+      <button id="go">Ask</button>
+    </form>
+    <div class="chips" id="chips"></div>
+    <div id="out" aria-live="polite"></div>
+  </div>
+  <div id="report-view">
+    <p class="meta">Pick the team and the week. Finance is shrink in dollars for every department, including Grocery. Store operations is shrink in units for the five fresh departments. All stores are listed until you narrow to one region or store. The report does not choose the team or the week, and it does not call a model. A partial week is marked in the week menu before you run it.</p>
+    <div class="seg" role="group" aria-label="Report basis">
+      <span>Show shrink in</span>
+      <button type="button" id="rbasis-dollars">Dollars</button>
+      <button type="button" id="rbasis-units">Units</button>
+      <button type="button" id="rbasis-both">Both</button>
+    </div>
+    <form id="rf">
+      <select id="team" aria-label="Team">
+        <option value="">Choose a team</option>
+        <option value="finance">Finance — dollars, every department</option>
+        <option value="ops">Store operations — units, fresh departments, by store</option>
+      </select>
+      <select id="week" aria-label="Week"><option value="">Choose a week</option></select>
+      <select id="region-filter" aria-label="Region" hidden><option value="">All regions</option></select>
+      <select id="store-filter" aria-label="Store" hidden><option value="">All stores</option></select>
+      <button id="run-report">Run report</button>
+    </form>
+    <div id="report-out" aria-live="polite"></div>
+  </div>
+  <p class="meta"><button type="button" id="debug-toggle" class="linkish">Debug</button></p>
+  <aside id="debug" hidden>
+    <div class="card">
+      <h3>Debug</h3>
+      <p class="meta" id="debug-log"></p>
+      <ul id="debug-list"></ul>
+    </div>
+  </aside>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+fetch('/api/meta').then(r=>r.json()).then(m=>{
+  $('#win').textContent = m.window[0] + ' to ' + m.window[1];
+  $('#chips').innerHTML = m.examples.map(e=>`<span class="chip">${esc(e)}</span>`).join('');
+  document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{$('#q').value=c.textContent; submit();});
+});
+
+$('#f').onsubmit = e => { e.preventDefault(); submit(); };
+
+let waitTimers = [];
+function clearWait(){
+  waitTimers.forEach(clearTimeout);
+  waitTimers = [];
+}
+
+function workingMarkup(steps, active, note){
+  const items = steps.map((label, i) => {
+    const state = i < active ? 'done' : i === active ? 'now' : 'later';
+    return `<li class="${state}"><span class="mark" aria-hidden="true"></span><span>${esc(label)}</span></li>`;
+  }).join('');
+  const bars = [0, 1, 2, 3].map(i =>
+    `<span class="skel${i === 0 ? ' lead' : ''}${i === 3 ? ' short' : ''}"></span>`).join('');
+  return `<div class="card working" aria-busy="true">
+    <p id="work-status" class="status" role="status">${esc(steps[active])}…</p>
+    <ol class="steps" id="work-steps">${items}</ol>
+    <div class="skeleton" aria-hidden="true">${bars}</div>
+    <p class="meta">${esc(note)}</p>
+  </div>`;
+}
+
+function beginWait(rootSel, steps, note, delays){
+  clearWait();
+  waitTimers.push(setTimeout(() => {
+    const root = $(rootSel);
+    if (!root) return;
+    root.innerHTML = workingMarkup(steps, 0, note);
+    delays.forEach((ms, i) => {
+      waitTimers.push(setTimeout(() => {
+        const status = $('#work-status');
+        const list = $('#work-steps');
+        if (!status || !list || !list.children) return;
+        status.textContent = steps[i + 1] + '…';
+        Array.from(list.children).forEach((li, n) => {
+          li.className = n < i + 1 ? 'done' : n === i + 1 ? 'now' : 'later';
+        });
+      }, ms));
+    });
+  }, 300));
+}
+
+let askBasis = 'auto';
+function paintAskBasis(){
+  ['auto', 'dollars', 'units', 'both'].forEach(b => {
+    const node = $('#basis-' + b);
+    if (node) node.className = b === askBasis ? 'on' : '';
+  });
+}
+['auto', 'dollars', 'units', 'both'].forEach(b => {
+  const node = $('#basis-' + b);
+  if (node) node.onclick = () => { askBasis = b; paintAskBasis(); };
+});
+
+async function submit(){
+  const q = $('#q').value.trim(); if(!q) return;
+  $('#go').disabled = true;
+  beginWait('#out', [
+    'Planning the query',
+    'Running it on the extract',
+    'Checking the numbers',
+    'Writing the answer',
+  ], 'The answer comes first. Sources are listed under it.', [8000, 14000, 22000]);
+  try{
+    const r = await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},
+                                     body:JSON.stringify({question:q, basis:askBasis})});
+    render(await r.json());
+  }catch(err){
+    $('#out').innerHTML = '<div class="card flag">'+esc(err)+'</div>';
+  }finally{
+    clearWait();
+    $('#go').disabled = false;
+  }
+}
+
+function fmtCell(v, unit){
+  if (v == null) return '—';
+  if (typeof v === 'number'){
+    if (unit === 'percent') return (v*100).toFixed(1)+'%';
+    const text = Math.abs(v).toLocaleString(undefined,{maximumFractionDigits:2});
+    return (v < 0 ? '-' : '') + (unit === 'dollars' ? '$' : '') + text;
+  }
+  return esc(v);
+}
+
+function sentences(text){
+  const parts = String(text || '').split(/(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
+  if (!parts.length) return '';
+  return `<p class="lead">${esc(parts[0])}</p>` + parts.slice(1).map(s => `<p class="follow">${esc(s)}</p>`).join('');
+}
+
+function changeWord(v){
+  if (v == null) return 'Not compared';
+  if (v > 0) return 'More shrink';
+  if (v < 0) return 'Less shrink';
+  return 'No change';
+}
+
+function table(rows, units = {}, labels = {}){
+  if(!rows || !rows.length) return '<p class="meta">No rows.</p>';
+  const cols = Object.keys(rows[0]);
+  const head = cols.map(c=>`<th class="${typeof rows[0][c]==='number'?'num':''}">${esc(labels[c] || String(c).replace(/_/g,' '))}</th>`).join('');
+  const body = rows.map(r=>'<tr>'+cols.map(c=>
+     `<td class="${typeof r[c]==='number'?'num':''}">${fmtCell(r[c], units[c])}</td>`).join('')+'</tr>').join('');
+  return `<div class="scroll"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+function traceDetails(trace){
+  if (!trace) return '';
+  const steps = (trace.steps || []).map(s =>
+    `<li>${esc(s.name)} · ${esc(s.ms)} ms${s.error ? ' · ' + esc(s.error) : ''}</li>`).join('');
+  return `<div class="card"><details class="trace"><summary>Trace ${esc(trace.id)} · ${esc(trace.ms)} ms</summary>
+          <ul>${steps}</ul><p class="meta">${esc(trace.log || '')}</p></details></div>`;
+}
+
+function answerTable(t){
+  if (!t || !t.rows || !t.rows.length) return '';
+  const head = t.headers.map((h, i) => `<th class="${i ? 'num' : ''}">${esc(h)}</th>`).join('');
+  const body = t.rows.map(row => '<tr>' + row.map((cell, i) => {
+    if (cell && Object.prototype.hasOwnProperty.call(cell, 'value')) {
+      const tone = cell.tone === 'up' ? ' up' : cell.tone === 'down' ? ' down' : '';
+      return `<td class="num${tone}">${fmtCell(cell.value, cell.unit)}</td>`;
+    }
+    return `<td class="${i ? 'num' : ''}">${esc((cell && cell.text) || '')}</td>`;
+  }).join('') + '</tr>').join('');
+  const scroll = t.rows.length > 8 ? ' scroll' : '';
+  return `<div class="answer-table${scroll}"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+function sourcesFooter(c, line){
+  const sources = (line && line.sources) || [];
+  const items = sources.map(s =>
+    `<li id="src-${s.n}"><span class="n">${esc(s.label || s.n)}</span><span>${esc(s.text)}</span></li>`).join('');
+  let query = '';
+  const read = (line && line.read) || c.restatement;
+  if (read) query += `<p>We read the question as: ${esc(read)}.</p>`;
+  if (line && line.notes && line.notes.length)
+    query += `<ul>${line.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul>`;
+  if (c.sql)
+    query += `<pre>${esc(c.sql)}</pre>${c.compare_sql ? '<pre style="margin-top:8px">'+esc(c.compare_sql)+'</pre>' : ''}`;
+  const disclosure = query ? `<details><summary>Query</summary>${query}</details>` : '';
+  if (!items && !disclosure) return '';
+  return `<footer class="sources"><h3>Sources</h3>${items ? `<ol>${items}</ol>` : ''}${disclosure}</footer>`;
+}
+
+function renderAnswer(c){
+  const line = c.headline || {};
+  const parts = (line.parts && line.parts.length) ? line.parts : [{text: c.answer || '', tone: ''}];
+  const lead = parts.map(p => {
+    const cls = [p.fig ? 'fig' : '', p.tone === 'up' ? 'up' : p.tone === 'down' ? 'down' : ''].filter(Boolean).join(' ');
+    return cls ? `<span class="${cls}">${esc(p.text)}</span>` : esc(p.text);
+  }).join('');
+  let h = `<article class="card"><p class="lead">${lead}</p>`;
+  if (line.note) h += `<p class="callout">${esc(line.note)}</p>`;
+  if (line.table) h += answerTable(line.table);
+  if (c.unverified_figures && c.unverified_figures.length)
+    h += `<p class="callout bad">These figures are not in the rows: <strong>${
+      c.unverified_figures.map(esc).join(', ')}</strong>. Do not rely on them.</p>`;
+  h += sourcesFooter(c, line);
+  h += '</article>';
+  h += traceDetails(c.trace);
+  $('#out').innerHTML = h;
+}
+
+function render(c){
+  let h = '';
+  if(!c.answerable){
+    const why = c.backend === 'not configured' ? 'No model configured'
+              : c.error ? 'Unable to answer' : 'Not answerable from this extract';
+    h += `<div class="card flag"><h3>${why}</h3>
+          <div class="answer">${esc(c.answer)}</div></div>`;
+    h += (c.caveats || []).map(x=>`<div class="card"><p class="meta">${esc(x)}</p></div>`).join('');
+    h += traceDetails(c.trace);
+    $('#out').innerHTML = h; return;
+  }
+  if (c.headline) { renderAnswer(c); return; }
+
+  h += `<div class="card"><div class="answer">${sentences(c.answer)}</div>
+        ${c.restatement ? '<p class="meta">We read the question as: '+esc(c.restatement)+'.</p>' : ''}</div>`;
+
+  if(c.unverified_figures.length)
+    h += `<div class="card flag"><h3>Check these numbers</h3>
+          <p>These figures are not in the table:
+          <strong>${c.unverified_figures.map(esc).join(', ')}</strong>. Do not rely on them.</p></div>`;
+
+  const s = c.sensitivity;
+  if(s && s.disagrees)
+    h += `<div class="card sens"><h3>Dollars and units disagree</h3>
+          <p><strong>${esc(s.message)}</strong></p>
+          <p class="meta">${esc(s.primary_definition)} · ${esc(s.other_definition)}</p></div>`;
+
+  h += '<div class="grid">';
+  h += `<div class="card"><h3>What was included</h3><ul>${
+        c.assumptions.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>
+        <h3 style="margin-top:14px">The formula</h3><ul>${
+        c.definitions.map(d=>`<li>${esc(d)}</li>`).join('')}</ul></div>`;
+
+  let right = '';
+  if(c.caveats.length)
+    right += `<h3>Before you act on this</h3><ul>${c.caveats.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
+  if(s && !s.disagrees && s.primary_total !== undefined){
+    const moved = s.other_change_pct == null ? ''
+      : (s.other_change_pct >= 0 ? ', up ' : ', down ') + Math.abs(s.other_change_pct).toFixed(1) + '% from the prior period';
+    right += `<h3 style="margin-top:14px">Counted the other way</h3>
+              <p>${esc(s.other_label)} is <strong>${s.other_total.toLocaleString(undefined,{maximumFractionDigits:0})}</strong>${moved}. It moves the same way, so the story does not change.</p>`;
+  }
+  if(c.scope_note)
+    right += `<h3 style="margin-top:14px">Grocery</h3>
+              <p>Fresh only: <strong>${fmtCell(c.scope_note.fresh_total, c.scope_note.unit)}</strong>.
+              Including ${esc(c.scope_note.departments_excluded.join(', '))}:
+              <strong>${fmtCell(c.scope_note.all_total, c.scope_note.unit)}</strong>
+              ${c.scope_note.delta_pct == null ? '(no percentage: the fresh total is zero)'
+                : '('+(c.scope_note.delta_pct>=0?'+':'')+c.scope_note.delta_pct.toFixed(1)+'%)'}.</p>`;
+  if(!right) right = '<h3>Before you act on this</h3><p class="meta">Nothing else to flag.</p>';
+  h += `<div class="card">${right}</div></div>`;
+
+  h += `<div class="card"><h3>Rows <span class="pill">${c.rows.length}</span></h3>${table(c.rows, c.column_units)}</div>`;
+  if(c.compare_rows.length)
+    h += `<div class="card"><h3>Comparison period</h3>${table(c.compare_rows, c.column_units)}</div>`;
+
+  h += `<div class="card"><details><summary>SQL that produced these rows</summary>
+        <pre>${esc(c.sql)}</pre>${c.compare_sql ? '<pre style="margin-top:8px">'+esc(c.compare_sql)+'</pre>' : ''}
+        </details>
+        <details style="margin-top:8px"><summary>Query spec the planner produced</summary>
+        <pre>${esc(JSON.stringify(c.spec,null,2))}</pre></details></div>`;
+  h += traceDetails(c.trace);
+
+  $('#out').innerHTML = h;
+}
+
+function showView(which){
+  $('#ask-view').hidden = which !== 'ask';
+  $('#report-view').hidden = which !== 'report';
+  $('#view-ask').className = 'view' + (which === 'ask' ? ' on' : '');
+  $('#view-report').className = 'view' + (which === 'report' ? ' on' : '');
+}
+$('#view-ask').onclick = () => showView('ask');
+$('#view-report').onclick = () => showView('report');
+showView('report');
+
+fetch('/api/report/weeks').then(r => r.json()).then(m => {
+  $('#week').innerHTML = '<option value="">Choose a week</option>' +
+    m.weeks.map(w => `<option value="${esc(w.week_start)}">${esc(w.menu_label || w.label)}</option>`).join('');
+});
+
+let reportBasis = '';
+const TEAM_BASIS = {finance: 'dollars', ops: 'units'};
+function paintReportBasis(shown){
+  const teamNode = $('#team');
+  const team = teamNode && typeof teamNode.value === 'string' ? teamNode.value : '';
+  const active = shown || reportBasis || TEAM_BASIS[team] || '';
+  ['dollars', 'units', 'both'].forEach(b => {
+    const node = $('#rbasis-' + b);
+    if (node) node.className = b === active ? 'on' : '';
+  });
+}
+['dollars', 'units', 'both'].forEach(b => {
+  const node = $('#rbasis-' + b);
+  if (node) node.onclick = () => {
+    reportBasis = b;
+    paintReportBasis();
+    const team = $('#team').value, week = $('#week').value;
+    if (team && week) runReport();
+  };
+});
+const teamSelect = $('#team');
+if (teamSelect) teamSelect.onchange = () => { reportBasis = ''; paintReportBasis(); };
+
+$('#rf').onsubmit = e => { e.preventDefault(); runReport(); };
+
+async function runReport(){
+  const team = $('#team').value, week = $('#week').value;
+  if (!team || !week) {
+    $('#report-out').innerHTML = '<div class="card flag"><p>Choose a team and a week. The report does not pick them for you.</p></div>';
+    return;
+  }
+  $('#run-report').disabled = true;
+  beginWait('#report-out', [
+    'Adding up this week and the week before',
+    'Naming the items that were included',
+  ], 'Both weeks will appear side by side. An increase means more shrink.', [2000]);
+  try {
+    const basisPart = reportBasis ? '&basis=' + encodeURIComponent(reportBasis) : '';
+    const r = await fetch('/api/report?team=' + encodeURIComponent(team) + '&week=' + encodeURIComponent(week) + basisPart);
+    const body = await r.json();
+    if (!r.ok) {
+      const detail = body && body.detail ? body.detail : 'Could not run the report';
+      $('#report-out').innerHTML = '<div class="card flag"><p>' + esc(detail) + '</p></div>';
+    } else renderReport(body);
+  } catch (err) {
+    $('#report-out').innerHTML = '<div class="card flag"><p>' + esc(err) + '</p></div>';
+  } finally {
+    clearWait();
+    $('#run-report').disabled = false;
+  }
+}
+
+function measureName(measure){
+  return measure === 'shrink_units' ? 'Shrink in units' : 'Shrink in dollars';
+}
+
+function kpis(total, unit, curLabel, priorLabel, title){
+  if (!total) return '';
+  const cls = total.change > 0 ? 'up' : total.change < 0 ? 'down' : '';
+  const head = title ? `<h3>${esc(title)}</h3>` : '';
+  return head + `<div class="kpis">
+    <div class="kpi"><span>This week</span><strong>${fmtCell(total.current, unit)}</strong><em>${esc(curLabel)}</em></div>
+    <div class="kpi"><span>Prior week</span><strong>${fmtCell(total.prior, unit)}</strong><em>${esc(priorLabel)}</em></div>
+    <div class="kpi"><span>Change</span><strong class="${cls}">${fmtCell(total.change, unit)}</strong><em>${esc(changeWord(total.change))}</em></div>
+  </div>`;
+}
+
+function unitTag(unit){
+  return unit === 'dollars' ? '$' : 'units';
+}
+
+function trioCells(row, unit){
+  const cls = row.change > 0 ? 'num up' : row.change < 0 ? 'num down' : 'num';
+  return `<td class="num">${fmtCell(row.current, unit)}</td>` +
+    `<td class="num">${fmtCell(row.prior, unit)}</td>` +
+    `<td class="${cls}">${fmtCell(row.change, unit)}</td>`;
+}
+
+function metricTable(rows, total, curLabel, priorLabel, unit){
+  const also = rows && rows.length && rows[0].also ? rows[0].also : null;
+  const tag = also ? ' · ' + unitTag(unit) : '';
+  const headers = ['Department', curLabel + tag, priorLabel + tag, 'Change' + tag];
+  if (also) {
+    const atag = ' · ' + unitTag(also.unit);
+    headers.push(curLabel + atag, priorLabel + atag, 'Change' + atag);
+  }
+  const line = (name, row, totalRow) => {
+    return '<tr class="' + (totalRow ? 'total' : '') + '">' +
+      `<td>${esc(name)}</td>` + trioCells(row, unit) +
+      (also && row.also ? trioCells(row.also, also.unit) : '') + '</tr>';
+  };
+  return `<div class="scroll"><table><thead><tr>${headers.map(h => `<th class="${h === 'Department' ? '' : 'num'}">${esc(h)}</th>`).join('')}</tr></thead><tbody>` +
+    rows.map(r => line(r.dept, r, false)).join('') +
+    (total ? line('Total', total, true) : '') +
+    '</tbody></table></div>';
+}
+
+function itemTable(rows, curLabel, priorLabel, unit){
+  if (!rows || !rows.length) return '<p class="meta">No items ranked.</p>';
+  const also = rows[0].also || null;
+  const tag = also ? ' · ' + unitTag(unit) : '';
+  const headers = ['Item ID', 'Item', 'Department', curLabel + tag, priorLabel + tag, 'Change' + tag];
+  if (also) {
+    const atag = ' · ' + unitTag(also.unit);
+    headers.push(curLabel + atag, priorLabel + atag, 'Change' + atag);
+  }
+  const body = rows.map(r => {
+    return '<tr>' +
+      `<td>${esc(r.item_id)}</td><td>${esc(r.description)}</td><td>${esc(r.dept)}</td>` +
+      trioCells(r, unit) + (also && r.also ? trioCells(r.also, also.unit) : '') + '</tr>';
+  }).join('');
+  return `<div class="scroll"><table><thead><tr>${headers.map((h, i) => `<th class="${i < 3 ? '' : 'num'}">${esc(h)}</th>`).join('')}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
+function itemsByDept(items){
+  const groups = [];
+  items.forEach(item => {
+    const last = groups[groups.length - 1];
+    if (!last || last.dept !== item.dept) groups.push({dept: item.dept, items: [item]});
+    else last.items.push(item);
+  });
+  return groups.map(g => `<h3 style="margin-top:14px">${esc(g.dept)}</h3><ul>${
+    g.items.map(item => `<li>${esc(item.item_id)} — ${esc(item.description)}</li>`).join('')
+  }</ul>`).join('');
+}
+
+function selected(id){
+  const node = $(id);
+  return node && typeof node.value === 'string' ? node.value : '';
+}
+
+function syncOpsFilters(c){
+  const storeSel = $('#store-filter');
+  const regionSel = $('#region-filter');
+  if (!storeSel || !regionSel || !('hidden' in storeSel)) return;
+  const ops = c.team === 'ops';
+  storeSel.hidden = !ops;
+  regionSel.hidden = !ops;
+  if (!ops) return;
+  const region = typeof regionSel.value === 'string' ? regionSel.value : '';
+  const store = typeof storeSel.value === 'string' ? storeSel.value : '';
+  const regions = [];
+  c.stores.forEach(s => { if (!regions.includes(s.region)) regions.push(s.region); });
+  regionSel.innerHTML = '<option value="">All regions</option>' +
+    regions.map(name => `<option value="${esc(name)}">${esc(name)}</option>`).join('');
+  regionSel.value = regions.includes(region) ? region : '';
+  const inRegion = c.stores.filter(s => !regionSel.value || s.region === regionSel.value);
+  storeSel.innerHTML = '<option value="">All stores</option>' +
+    inRegion.map(s => `<option value="${esc(s.store_id)}">Store ${esc(s.store_id)} · ${esc(s.region)}</option>`).join('');
+  storeSel.value = inRegion.some(s => String(s.store_id) === store) ? store : '';
+}
+
+function shownStores(c){
+  const region = selected('#region-filter');
+  const store = selected('#store-filter');
+  return c.stores.filter(s => (!region || s.region === region) && (!store || String(s.store_id) === store));
+}
+
+function groceryLine(c){
+  if (c.team !== 'finance' || !c.comparable) return '';
+  const rows = c.departments_table || [];
+  const grocery = rows.find(row => row.dept === 'Grocery');
+  const total = c.department_total;
+  if (!grocery || grocery.change == null || !total || total.change == null) return '';
+  const groceryAbs = Math.abs(grocery.change);
+  const totalAbs = Math.abs(total.change);
+  const largest = rows.every(row => row.change == null || Math.abs(row.change) <= groceryAbs + 0.001);
+  if (!largest || totalAbs === 0 || groceryAbs < totalAbs * 0.5) return '';
+  return '<p class="meta">Grocery accounts for most of this change.</p>';
+}
+
+function renderReport(c){
+  reportBody = c;
+  paintReportBasis(c.basis);
+  syncOpsFilters(c);
+  const unit = c.unit;
+  const cur = c.week.label;
+  const prior = c.comparable ? c.prior_week.label : 'Prior week';
+  const who = c.team === 'finance'
+    ? 'Finance, every department, including Grocery'
+    : 'Store operations, fresh departments, by store';
+  let h = `<p class="banner">${esc(who)} · ${esc(cur)}</p>`;
+  h += `<p class="meta">An increase means more shrink than the prior week. Red is up. Green is down.</p>`;
+  if (c.notes.length)
+    h += `<div class="card sens"><h3>Read this before the numbers</h3><ul>${c.notes.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`;
+  const rankedNote = c.basis === 'both'
+    ? `<p class="meta">Ranked by ${esc(measureName(c.ranked_by).toLowerCase())}; the other measure is shown alongside.</p>` : '';
+  if (c.team === 'finance') {
+    h += kpis(c.department_total, unit, cur, prior);
+    if (c.department_total && c.department_total.also)
+      h += kpis(c.department_total.also, c.department_total.also.unit, cur, prior, measureName(c.department_total.also.measure));
+    h += groceryLine(c);
+    h += `<div class="card"><h3>Shrink by department</h3>${metricTable(c.departments_table, c.department_total, cur, prior, unit)}</div>`;
+    h += `<div class="card"><h3>Largest increases, chain-wide</h3>${rankedNote}<p class="meta">${esc(c.top_items_note)}</p>${itemTable(c.top_items, cur, prior, unit)}</div>`;
+  } else {
+    shownStores(c).forEach(s => {
+      h += `<div class="card"><h3>Store ${esc(s.store_id)} · ${esc(s.banner)} · ${esc(s.region)}</h3>`;
+      h += kpis(s.department_total, unit, cur, prior);
+      if (s.department_total && s.department_total.also)
+        h += kpis(s.department_total.also, s.department_total.also.unit, cur, prior, measureName(s.department_total.also.measure));
+      h += metricTable(s.departments, s.department_total, cur, prior, unit);
+      h += `<h3 style="margin-top:14px">Largest increases</h3>${rankedNote}<p class="meta">${esc(s.top_items_note)}</p>${itemTable(s.top_items, cur, prior, unit)}</div>`;
+    });
+  }
+  h += `<footer class="card sources"><h3>Sources</h3><ul>${c.counted.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
+  h += `<details><summary>Items included (${c.included_items.length})</summary>${itemsByDept(c.included_items)}</details>`;
+  h += `<details><summary>Query</summary><pre>${esc(c.sql.departments)}</pre>`;
+  if (c.sql.top_items) h += `<pre style="margin-top:8px">${esc(c.sql.top_items)}</pre>`;
+  h += '</details></footer>';
+  h += traceDetails(c.trace);
+  $('#report-out').innerHTML = h;
+}
+
+let reportBody = null;
+$('#region-filter').onchange = () => {
+  if (typeof $('#store-filter').value === 'string') $('#store-filter').value = '';
+  if (reportBody) renderReport(reportBody);
+};
+$('#store-filter').onchange = () => { if (reportBody) renderReport(reportBody); };
+
+let debugOn = false;
+$('#debug-toggle').onclick = async () => {
+  debugOn = !debugOn;
+  $('#debug').hidden = !debugOn;
+  $('#debug-toggle').className = 'linkish' + (debugOn ? ' on' : '');
+  if (!debugOn) return;
+  $('#debug-list').innerHTML = '<li class="meta">Loading recent requests…</li>';
+  try {
+    const r = await fetch('/api/debug');
+    const payload = await r.json();
+    $('#debug-log').textContent = payload.log || '';
+    const rows = (payload.recent || []).map(item => {
+      const steps = (item.steps || []).map(s => `${s.name} ${s.ms}ms`).join(' · ');
+      const fields = item.fields || {};
+      const what = fields.question || [fields.team, fields.week].filter(Boolean).join(' ');
+      return `<li><strong>${esc(item.kind)}</strong> ${esc(item.id)} · ${esc(item.ms)} ms${item.error ? ' · ' + esc(item.error) : ''}<br><span class="meta">${esc(what)}<br>${esc(steps)}</span></li>`;
+    }).join('');
+    $('#debug-list').innerHTML = rows || '<li class="meta">No requests yet. Ask a question or run a report.</li>';
+  } catch (err) {
+    $('#debug-list').innerHTML = '<li>' + esc(err) + '</li>';
+  }
+};
+</script>
+</body>
+</html>
